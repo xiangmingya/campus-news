@@ -344,3 +344,181 @@ function password_hash_custom($password) {
 function password_verify_custom($password, $hash) {
     return password_verify($password, $hash);
 }
+
+/**
+ * 获取审核状态文本
+ * @param string $status 状态代码
+ * @return string
+ */
+function get_review_status_text($status) {
+    $status_map = [
+        'draft' => '草稿',
+        'pending_first' => '待初审',
+        'pending_final' => '待终审',
+        'approved' => '已批准',
+        'rejected' => '已拒绝',
+        'revision_required' => '需修改'
+    ];
+    return $status_map[$status] ?? '未知';
+}
+
+/**
+ * 获取审核状态标签类
+ * @param string $status 状态代码
+ * @return string
+ */
+function get_review_status_class($status) {
+    $class_map = [
+        'draft' => 'secondary',
+        'pending_first' => 'primary',
+        'pending_final' => 'warning',
+        'approved' => 'success',
+        'rejected' => 'danger',
+        'revision_required' => 'warning'
+    ];
+    return $class_map[$status] ?? 'secondary';
+}
+
+/**
+ * 发送通知
+ * @param int $user_id 用户ID
+ * @param string $type 通知类型
+ * @param string $title 标题
+ * @param string $content 内容
+ * @return bool
+ */
+function send_notification($user_id, $type, $title, $content) {
+    try {
+        $stmt = db()->prepare('
+            INSERT INTO notifications 
+            (user_id, type, title, content, created_at)
+            VALUES (?, ?, ?, ?, NOW())
+        ');
+        return $stmt->execute([$user_id, $type, $title, $content]);
+    } catch (\Exception $e) {
+        error_log('发送通知失败: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * 获取未读通知数量
+ * @param int $user_id 用户ID
+ * @return int
+ */
+function get_unread_notifications_count($user_id = null) {
+    if (!$user_id) {
+        $user_id = user_id();
+    }
+    if (!$user_id) {
+        return 0;
+    }
+    
+    $stmt = db()->prepare('SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND is_read = 0');
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch();
+    return $result ? intval($result['cnt']) : 0;
+}
+
+/**
+ * 检查今日投稿数量
+ * @param int $user_id 用户ID
+ * @return int
+ */
+function get_today_submit_count($user_id = null) {
+    if (!$user_id) {
+        $user_id = user_id();
+    }
+    if (!$user_id) {
+        return 0;
+    }
+    
+    $stmt = db()->prepare('
+        SELECT COUNT(*) as cnt 
+        FROM articles 
+        WHERE user_id = ? AND DATE(submit_time) = CURDATE()
+    ');
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch();
+    return $result ? intval($result['cnt']) : 0;
+}
+
+/**
+ * 检查本周视频投稿数量
+ * @param int $user_id 用户ID
+ * @return int
+ */
+function get_week_video_count($user_id = null) {
+    if (!$user_id) {
+        $user_id = user_id();
+    }
+    if (!$user_id) {
+        return 0;
+    }
+    
+    $stmt = db()->prepare('
+        SELECT COUNT(*) as cnt 
+        FROM articles 
+        WHERE user_id = ? 
+        AND category_id = (SELECT id FROM categories WHERE slug = "video" LIMIT 1)
+        AND YEARWEEK(submit_time) = YEARWEEK(NOW())
+    ');
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch();
+    return $result ? intval($result['cnt']) : 0;
+}
+
+/**
+ * 检查是否可以投稿
+ * @param int $user_id 用户ID
+ * @param string $type 类型 text/video
+ * @return array ['can' => bool, 'message' => string]
+ */
+function can_submit_article($user_id = null, $type = 'text') {
+    if (!$user_id) {
+        $user_id = user_id();
+    }
+    if (!$user_id) {
+        return ['can' => false, 'message' => '请先登录'];
+    }
+    
+    // 检查今日投稿数量
+    $daily_limit = config('article.daily_limit', 5);
+    $today_count = get_today_submit_count($user_id);
+    if ($today_count >= $daily_limit) {
+        return ['can' => false, 'message' => "今日投稿已达上限（{$daily_limit}篇）"];
+    }
+    
+    // 如果是视频，检查本周视频投稿数量
+    if ($type === 'video') {
+        $weekly_video_limit = config('article.weekly_video_limit', 2);
+        $week_count = get_week_video_count($user_id);
+        if ($week_count >= $weekly_video_limit) {
+            return ['can' => false, 'message' => "本周视频投稿已达上限（{$weekly_video_limit}个）"];
+        }
+    }
+    
+    return ['can' => true, 'message' => ''];
+}
+
+/**
+ * 格式化时间为友好格式
+ * @param string $time 时间字符串
+ * @return string
+ */
+function time_ago($time) {
+    $timestamp = strtotime($time);
+    $diff = time() - $timestamp;
+    
+    if ($diff < 60) {
+        return '刚刚';
+    } elseif ($diff < 3600) {
+        return floor($diff / 60) . '分钟前';
+    } elseif ($diff < 86400) {
+        return floor($diff / 3600) . '小时前';
+    } elseif ($diff < 604800) {
+        return floor($diff / 86400) . '天前';
+    } else {
+        return date('Y-m-d', $timestamp);
+    }
+}

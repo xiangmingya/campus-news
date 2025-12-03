@@ -1,23 +1,28 @@
 # 校园新闻投稿系统
 
-基于PHP的校园媒体投稿管理系统，支持文字、摄影、视频等多种形式投稿。
+基于原生PHP开发的校园媒体投稿管理系统，支持文字、摄影、视频等多种形式投稿。
 
-## 功能特点
+[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D7.4-blue.svg)](https://php.net)
+[![MySQL Version](https://img.shields.io/badge/MySQL-%3E%3D5.7-orange.svg)](https://www.mysql.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-- 🔐 多角色权限管理（超管/管理员/审核员/投稿用户）
-- ✅ 人工身份认证（学生证/校园卡审核）
-- 📝 两级审核流程（初审→终审→发布）
-- 🎨 多媒体内容支持（文字/摄影/视频）
-- ☁️ 百度网盘链接管理
-- 📊 完整的操作日志记录
-- 🛡️ 投稿限制与防滥用机制
+## ✨ 功能特点
 
-## 技术栈
+- 🔐 **多角色权限管理** - 超管/管理员/审核员/投稿用户，权限清晰分明
+- ✅ **人工身份认证** - 学生证/校园卡人工审核，确保用户真实性
+- 📝 **两级审核流程** - 初审→终审→发布，严格把控稿件质量
+- 🎨 **多媒体内容支持** - 文字稿件/Word上传/百度网盘链接
+- 📊 **完整的操作日志** - 记录所有重要操作，可追溯
+- 🛡️ **投稿限制机制** - 每日/每周投稿限制，防止滥用
+- 🔔 **通知系统** - 审核结果实时通知，用户体验友好
+- 📈 **审核统计分析** - 多维度统计，图表可视化
 
-- **后端框架**: ThinkPHP 6.0
+## 🚀 技术栈
+
+- **后端框架**: 原生PHP 7.4+ (轻量级MVC架构)
 - **前端技术**: HTML5 + CSS3 + JavaScript + jQuery + Bootstrap 5
 - **数据库**: MySQL 5.7+
-- **编辑器**: wangEditor
+- **图表库**: Chart.js
 - **部署环境**: 宝塔面板 + Nginx + PHP-FPM
 
 ## 环境要求
@@ -198,24 +203,157 @@ campus-news/
 - 错误日志：宝塔面板 → 网站 → 日志
 - 操作日志：后台管理 → 操作日志
 
-## 开发文档
+## 📚 开发文档
 
-详细的开发文档请参考 `docs/开发文档.md`
+- **[开发指南](DEVELOPMENT.md)** - 详细的开发说明和规范
+- **[辅助函数文档](HELPER_FUNCTIONS.md)** - 所有辅助函数的使用说明
+- **[部署检查清单](DEPLOYMENT_CHECKLIST.md)** - 完整的部署步骤和检查项
+- **[审核模块说明](REVIEW_MODULE_COMPLETED.md)** - 审核功能详细文档
 
-## 更新日志
+## 🧪 快速测试
+
+系统提供了测试数据，可以快速体验所有功能：
+
+```bash
+# 导入测试数据
+mysql -u root -p campus_news < database/test_data.sql
+```
+
+**测试账号：**
+- 管理员：`admin@example.com` / `admin123456`
+- 审核员：`editor1@test.com` / `123456`
+- 学生用户：`student1@test.com` / `123456`
+
+## 🎯 核心功能模块
+
+### 1. 用户认证模块
+- 用户注册/登录
+- 身份认证（学生证/校园卡）
+- 权限管理
+
+### 2. 投稿模块
+- 文字稿件投稿（富文本编辑）
+- Word文档上传
+- 多媒体稿件（网盘链接）
+- 草稿保存
+- 投稿限制检查
+
+### 3. 审核模块 ⭐
+- **两级审核流程**：初审→终审
+- **审核工作台**：统计数据、待审列表
+- **审核操作**：通过/拒绝/要求修改
+- **审核历史**：完整的审核记录
+- **审核统计**：多维度数据分析
+
+### 4. 通知系统
+- 审核结果通知
+- 系统消息通知
+- 未读消息提醒
+
+## 📊 项目结构
+
+```
+campus-news/
+├── app/                      # 应用核心
+│   ├── controller/           # 控制器
+│   │   ├── AuthController.php         # 认证
+│   │   ├── ArticleController.php      # 投稿
+│   │   ├── ReviewController.php       # 审核 ⭐
+│   │   └── ...
+│   └── common/
+│       └── functions.php     # 辅助函数（17个）
+├── view/                     # 视图模板
+│   ├── auth/                 # 认证页面
+│   ├── article/              # 投稿页面
+│   ├── editor/               # 审核页面 ⭐
+│   └── error/                # 错误页面
+├── public/                   # 公共目录
+│   ├── index.php             # 入口文件
+│   └── static/               # 静态资源
+├── database/                 # 数据库
+│   ├── install.sql           # 安装脚本
+│   └── test_data.sql         # 测试数据
+├── runtime/                  # 运行时目录
+└── uploads/                  # 上传目录
+```
+
+## 🔧 开发相关
+
+### 添加新的控制器
+```php
+<?php
+namespace App\Controller;
+
+require_once __DIR__ . '/BaseController.php';
+
+class ExampleController extends BaseController {
+    public function index() {
+        $this->checkLogin();
+        $this->checkPermission('example_permission');
+        
+        // 业务逻辑
+        view('example/index', ['data' => $data]);
+    }
+}
+```
+
+### 使用辅助函数
+```php
+// 获取审核状态文本
+$status_text = get_review_status_text('pending_first'); // "待初审"
+
+// 检查投稿限制
+$check = can_submit_article();
+if (!$check['can']) {
+    $this->error($check['message']);
+}
+
+// 发送通知
+send_notification($user_id, 'system', '标题', '内容');
+
+// 友好的时间显示
+echo time_ago('2024-03-20 10:30:00'); // "5分钟前"
+```
+
+## 📝 更新日志
+
+### v1.2.0 (2024-12-03) - 最新版本
+- ✅ 完整的审核模块实现
+- ✅ AuthController - 认证功能
+- ✅ ArticleController - 投稿功能
+- ✅ 9个新增辅助函数
+- ✅ 友好的错误页面
+- ✅ 完整的测试数据
+- ✅ 详细的文档体系
+
+### v1.1.0 (2024-12-03)
+- ✅ 审核控制器完整实现
+- ✅ 4个审核视图页面
+- ✅ 数据库结构完善
+- ✅ 静态资源优化
 
 ### v1.0.0 (2024-03-20)
 - 初始版本发布
-- 实现核心功能模块
-- 完成基础界面开发
+- 基础框架搭建
 
-## License
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 License
 
 MIT License
 
 Copyright (c) 2024 Campus News System
 
-## 联系方式
+## 💬 技术支持
 
-项目负责人：______  
-技术支持：______
+如遇问题，请查看：
+1. [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) - 部署常见问题
+2. [HELPER_FUNCTIONS.md](HELPER_FUNCTIONS.md) - 函数使用说明
+3. 系统日志：`runtime/log/error.log`
+4. 操作日志：后台管理 → 操作日志
+
+## 🌟 Star History
+
+如果这个项目对你有帮助，请给个 Star ⭐

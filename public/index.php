@@ -52,7 +52,11 @@ $controller_file = ROOT_PATH . 'app/controller/' . $controller . 'Controller.php
 
 if (!file_exists($controller_file)) {
     http_response_code(404);
-    echo '404 Not Found';
+    if (file_exists(ROOT_PATH . 'view/error/404.php')) {
+        require ROOT_PATH . 'view/error/404.php';
+    } else {
+        echo '404 Not Found';
+    }
     exit;
 }
 
@@ -63,7 +67,11 @@ $controller_class = 'App\\Controller\\' . $controller . 'Controller';
 
 if (!class_exists($controller_class)) {
     http_response_code(404);
-    echo '404 Not Found';
+    if (file_exists(ROOT_PATH . 'view/error/404.php')) {
+        require ROOT_PATH . 'view/error/404.php';
+    } else {
+        echo '404 Not Found';
+    }
     exit;
 }
 
@@ -71,7 +79,11 @@ $controller_instance = new $controller_class();
 
 if (!method_exists($controller_instance, $action)) {
     http_response_code(404);
-    echo '404 Not Found';
+    if (file_exists(ROOT_PATH . 'view/error/404.php')) {
+        require ROOT_PATH . 'view/error/404.php';
+    } else {
+        echo '404 Not Found';
+    }
     exit;
 }
 

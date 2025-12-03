@@ -1,6 +1,9 @@
 # 运行时文件
-runtime/
-uploads/
+runtime/*
+!runtime/.gitkeep
+uploads/*
+!uploads/.gitkeep
+!uploads/*/.gitkeep
 
 # 配置文件
 config/database.php
@@ -38,5 +41,6 @@ yarn.lock
 # 备份文件
 backup/
 *.sql
+!database/*.sql
 *.zip
 *.tar.gz
