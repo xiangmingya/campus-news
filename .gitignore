@@ -1,0 +1,42 @@
+# 运行时文件
+runtime/
+uploads/
+
+# 配置文件
+config/database.php
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.cache
+*.swp
+*.bak
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE配置
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Composer
+vendor/
+composer.lock
+
+# Node.js
+node_modules/
+package-lock.json
+yarn.lock
+
+# 备份文件
+backup/
+*.sql
+*.zip
+*.tar.gz
