@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+    Options +FollowSymlinks -Multiviews
+    RewriteEngine On
+
+    # 隐藏index.php
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php?s=$1 [QSA,PT,L]
+</IfModule>
+
+# 防止目录浏览
+Options -Indexes
+
+# 设置默认首页
+DirectoryIndex index.php index.html
+
+# PHP设置
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
